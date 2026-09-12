@@ -80,16 +80,47 @@ const start = async () => {
     await server.register(swagger, {
       openapi: {
         info: {
-          title: 'HealthCare Booking API',
-          description: 'Production-ready booking system',
-          version: '1.0.0'
+          title: 'Amrutam Telemedicine API',
+          description: '## Production-Grade Telemedicine Backend\n\n' +
+            'A modular, secure, and observable REST API for managing telemedicine consultations.\n\n' +
+            '### Key Engineering Features\n' +
+            '- **Concurrency-safe bookings** via PostgreSQL `SELECT ... FOR UPDATE` row-level locking\n' +
+            '- **Write idempotency** via `Idempotency-Key` header with SHA-256 body hashing\n' +
+            '- **Transactional Outbox** for reliable async event delivery (notifications, emails)\n' +
+            '- **Defense-in-depth security**: Helmet, CORS, RBAC, resource ownership checks, rate limiting\n' +
+            '- **Observability**: Structured JSON logging (Pino), Prometheus metrics at `/metrics`\n\n' +
+            '### Authentication\n' +
+            'All protected endpoints require a `Bearer` JWT token in the `Authorization` header. ' +
+            'Obtain tokens via `POST /api/v1/auth/login`.\n\n' +
+            '### Rate Limiting\n' +
+            'Critical write endpoints are rate-limited. Exceeding the limit returns `429 Too Many Requests`.',
+          version: '1.0.0',
+          contact: {
+            name: 'Amrutam Engineering',
+            url: 'https://github.com/Dipen-t/telecomdoctor-be'
+          }
         },
+        servers: [
+          { url: 'http://localhost:3000', description: 'Local Development' }
+        ],
+        tags: [
+          { name: 'Authentication', description: 'User registration, login, MFA, and token management' },
+          { name: 'Users', description: 'User profile management (authenticated)' },
+          { name: 'Doctors', description: 'Doctor profiles, search, and filtering' },
+          { name: 'Availability', description: 'Doctor availability slot management' },
+          { name: 'Bookings', description: 'Consultation booking with concurrency protection and idempotency' },
+          { name: 'Prescriptions', description: 'Medical prescription creation and retrieval' },
+          { name: 'Payments', description: 'Payment initiation and webhook processing' },
+          { name: 'Admin', description: 'Platform analytics and administration (ADMIN role required)' },
+          { name: 'Webhooks', description: 'External service webhooks (payment gateway, LiveKit)' }
+        ],
         components: {
           securitySchemes: {
             bearerAuth: {
               type: 'http',
               scheme: 'bearer',
-              bearerFormat: 'JWT'
+              bearerFormat: 'JWT',
+              description: 'JWT access token obtained from POST /api/v1/auth/login'
             }
           }
         }
