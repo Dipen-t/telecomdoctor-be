@@ -1,59 +1,138 @@
-# HealthCare Booking API
+# Amrutam Telemedicine Backend
 
-A production-grade, highly concurrent backend for a healthcare booking platform. Built with **Fastify**, **Prisma (PostgreSQL)**, and **Redis**.
+A production-grade, highly concurrent backend for a telemedicine consultation platform. Built with **Node.js**, **Fastify**, **Prisma (PostgreSQL)**, and **Redis**.
 
-## 🚀 Key Engineering Decisions
+## 📦 Tech Stack
 
-1. **Booking Concurrency (No Double-Booking)**
-   - When a patient books a slot, we execute a Postgres `SELECT ... FOR UPDATE` row-level lock inside an interactive transaction. This guarantees that if 100 users try to book the exact same slot concurrently, exactly 1 succeeds and 99 fail with a `409 Conflict`.
-   
-2. **Idempotency & Payload Mutation Protection**
-   - Endpoints implement `Idempotency-Key` headers. 
-   - A SHA-256 hash of the `request.body` is generated. If the same key is reused, the API returns the cached response.
-   - If the same key is reused with a *different* payload, the API intercepts it and returns a `400 IDEMPOTENCY_MISMATCH`.
+| Layer             | Technology                          |
+| ----------------- | ----------------------------------- |
+| Runtime           | Node.js + TypeScript                |
+| Framework         | Fastify                             |
+| Database          | PostgreSQL (via Prisma ORM)         |
+| Cache / Rate Limit| Redis (ioredis)                     |
+| Auth              | JWT + Argon2id + MFA                |
+| Validation        | Zod                                 |
+| Testing           | Vitest                              |
+| CI/CD             | GitHub Actions                      |
+| Container         | Docker (multi-stage, non-root)      |
+| Observability     | Pino (structured logs) + Prometheus |
 
-3. **Transactional Outbox Worker (Eventual Consistency)**
-   - Instead of immediately triggering emails/webhooks (which can fail), we write `OutboxEvent` records in the exact same Postgres transaction as the booking.
-   - A background worker polls this table. To prevent double-processing in multi-node environments, the worker claims events atomically using `FOR UPDATE SKIP LOCKED`.
+## 🚀 Quick Start
 
-4. **Resilient Rate Limiting (Redis Degradation)**
-   - We use `@fastify/rate-limit` with `ioredis`. 
-   - If Redis crashes, the limiter is configured to "fail-open" (`continueExceeding: true`). This ensures that a Redis outage degrades our abuse protection temporarily, but our **core PostgreSQL transactional booking system remains perfectly operational**.
-
-5. **Strict RBAC & Resource Ownership**
-   - Routes are protected by `@fastify/jwt`.
-   - Security doesn't stop at the role (e.g. `PATIENT` or `DOCTOR`). The controllers enforce explicit resource ownership (e.g., Doctor A cannot write prescriptions for Doctor B's consultations).
-
-6. **Observability**
-   - Exposes standard Prometheus metrics at `GET /metrics`.
-   - Pino logs include UUID request correlation IDs.
-
-## 🛠️ Local Development & Docker Setup
-
-You can spin up the entire stack using Docker:
+### Option 1: Docker (recommended)
 
 ```bash
+cp .env.example .env
 docker compose up --build
 ```
-This boots Postgres, Redis, and the Node API. The API container includes a healthcheck dependency on Postgres and automatically runs `npx prisma migrate deploy` before starting.
 
-Alternatively, run locally:
+This boots PostgreSQL, Redis, and the API. Migrations run automatically on container startup.
+
+### Option 2: Local Development
+
 ```bash
+cp .env.example .env
 npm install
 npx prisma generate
 npx prisma migrate dev
 npm run dev
 ```
 
+**Prerequisites:** PostgreSQL running on port `5433`, Redis on port `6380`.
+
+## 🔗 Key URLs
+
+| URL                              | Description                  |
+| -------------------------------- | ---------------------------- |
+| `http://localhost:3000/docs`     | OpenAPI / Swagger UI         |
+| `http://localhost:3000/metrics`  | Prometheus metrics           |
+| `http://localhost:3000/health`   | Health check                 |
+
 ## 🧪 Testing
 
-The repository contains a robust integration testing suite powered by Vitest, including heavy concurrency stress tests.
-
 ```bash
-npm run test
+npm run test           # Interactive watch mode
+npm run test:run       # Single run (CI)
+npm run lint           # ESLint
+npm run typecheck      # TypeScript strict check
+npm run build          # Production build
 ```
 
-## 📚 API Documentation
+### Test Coverage
 
-Once the server is running, visit the interactive OpenAPI/Swagger dashboard:
-`GET http://localhost:3000/docs`
+| Test Suite             | What It Proves                                                    |
+| ---------------------- | ----------------------------------------------------------------- |
+| `auth.test.ts`         | Registration, login, JWT issuance                                 |
+| `bookings.test.ts`     | Booking creation, slot locking, idempotency                       |
+| `stress.test.ts`       | 100 concurrent bookings → 1 success, 99 conflicts                |
+| `security.test.ts`     | IDOR, RBAC bypass, privilege escalation, mass assignment          |
+| `payments.test.ts`     | Payment creation, webhook processing                              |
+| `prescriptions.test.ts`| Prescription creation with ownership validation                   |
+| `worker-concurrency.test.ts` | Outbox worker atomic claiming via SKIP LOCKED              |
+| `admin.test.ts`        | Analytics endpoint RBAC                                           |
+
+## 🏗️ Key Engineering Decisions
+
+### 1. Booking Concurrency (No Double-Booking)
+PostgreSQL `SELECT ... FOR UPDATE` row-level lock inside an interactive transaction. 100 concurrent requests → exactly 1 success, 99 receive `409 Conflict`. Additionally, `Consultation.slotId` has a `@unique` database constraint as defense-in-depth.
+
+### 2. Write Idempotency
+All critical write endpoints require an `Idempotency-Key` header. The request body is SHA-256 hashed. Replaying the same key returns the cached response. Sending a different body with the same key returns `400 IDEMPOTENCY_MISMATCH`.
+
+### 3. Transactional Outbox
+Instead of calling external services (email, notifications) during the HTTP request, we write an `OutboxEvent` inside the same database transaction. A background worker polls with `SELECT ... FOR UPDATE SKIP LOCKED` and uses a `PENDING → PROCESSING → PROCESSED` state machine. Stale `PROCESSING` events (>5 min) are automatically swept for retry.
+
+### 4. Fail-Fast Secrets
+The server refuses to start if `JWT_SECRET`, `REFRESH_TOKEN_SECRET`, `DATABASE_URL`, or `REDIS_URL` are missing. No insecure fallback defaults.
+
+### 5. Resilient Rate Limiting
+Redis-backed rate limiting with fail-open degradation. If Redis is unavailable, the core PostgreSQL booking system remains fully operational.
+
+### 6. Defense-in-Depth Security
+- `@fastify/helmet` for security headers (HSTS, CSP, X-Content-Type-Options)
+- Environment-driven CORS via `CORS_ORIGIN`
+- RBAC middleware + resource ownership checks in business logic
+- Adversarially tested against IDOR, privilege escalation, cross-resource access, and mass assignment
+
+## 📁 Project Structure
+
+```
+src/
+├── app/                  # Server bootstrap, config, env validation
+├── modules/
+│   ├── auth/             # Registration, login, MFA, JWT
+│   ├── users/            # Profile management
+│   ├── doctors/          # Doctor CRUD, search, filtering
+│   ├── availability/     # Slot management, state machine
+│   ├── bookings/         # Concurrent booking, idempotency
+│   ├── prescriptions/    # Prescription CRUD with ownership
+│   ├── payments/         # Payment initiation, webhook
+│   ├── admin/            # Platform analytics
+│   └── webhooks/         # LiveKit, payment gateway
+├── middleware/            # Auth, RBAC, rate limit, idempotency, error handler
+├── security/             # Password hashing, JWT, MFA
+├── infrastructure/       # Prisma client, Redis client
+├── workers/              # Outbox background worker
+└── tests/                # Security adversarial tests
+prisma/
+├── schema.prisma         # Database schema
+docs/                     # Architecture, security, domain docs (with Mermaid diagrams)
+```
+
+## 📖 Documentation
+
+| Document | Contents |
+| -------- | -------- |
+| [Architecture](docs/01-architecture.md) | Tech stack, high-level architecture, modular monolith design |
+| [Auth & Users](docs/02-auth-and-users.md) | Registration, login, MFA, authorization flows |
+| [Doctors & Availability](docs/03-doctors-and-availability.md) | Doctor management, slot state machine |
+| [Booking System](docs/04-booking-system.md) | Concurrency, idempotency, transactional outbox |
+| [Consultation & Prescription](docs/05-consultation-and-prescription.md) | Lifecycle state machine, prescription creation |
+| [Payments](docs/06-payments.md) | Payment flow, webhook processing |
+| [Observability & Admin](docs/07-observability-and-admin.md) | Logging, metrics, admin analytics |
+| [Security & Threat Model](docs/08-security-and-threat-model.md) | OWASP controls, threat matrix, data classification |
+| [Infrastructure](docs/09-infrastructure-and-database.md) | Database design, Docker, CI/CD, testing strategy |
+
+## 📄 License
+
+This project was built as a take-home assessment for Amrutam.
