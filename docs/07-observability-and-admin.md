@@ -1,39 +1,46 @@
 # 1. Audit System
 
-Audit logging is mandatory. 
+Audit logging is mandatory.
 
-Model:
+## Audit ERD
 
-```text
-audit_logs
+```mermaid
+erDiagram
+    USER {
+        uuid id PK
+        string email
+        enum role
+    }
+    AUDIT_LOG {
+        uuid id PK
+        uuid actorId FK
+        string action
+        string resourceType
+        string resourceId
+        string requestId
+        string ipAddress
+        json metadata
+        datetime createdAt
+    }
 
-id
-actor_id
-action
-resource_type
-resource_id
-request_id
-ip_address
-metadata
-created_at
+    USER ||--o{ AUDIT_LOG : triggers
 ```
 
-Examples:
+## Audit Events
 
-```text
-USER_LOGIN
-USER_LOGIN_FAILED
-BOOKING_CREATED
-BOOKING_CANCELLED
-CONSULTATION_ACCESSED
-PRESCRIPTION_CREATED
-PAYMENT_CREATED
-ADMIN_ACTION
+```mermaid
+flowchart LR
+    A[USER_LOGIN] --> Z[AuditLog]
+    B[USER_LOGIN_FAILED] --> Z
+    C[BOOKING_CREATED] --> Z
+    D[BOOKING_CANCELLED] --> Z
+    E[CONSULTATION_ACCESSED] --> Z
+    F[PRESCRIPTION_CREATED] --> Z
+    G[PAYMENT_CREATED] --> Z
+    H[ADMIN_ACTION] --> Z
 ```
 
 Sensitive medical content should not be dumped into application logs.
-
----
 
 ---
 
@@ -45,56 +52,60 @@ Endpoint:
 GET /api/v1/admin/analytics/overview
 ```
 
-Metrics:
+## Admin Dashboard Data Flow
 
-```text
-Total consultations
-Completed consultations
-Cancelled consultations
-Active doctors
-Active patients
-Bookings
-Revenue
+```mermaid
+flowchart TD
+    A[Admin Request] --> B{Authenticate}
+    B --> C{Authorize ADMIN role}
+    C --> D[Query PostgreSQL]
+    D --> E[Total Consultations]
+    D --> F[Completed Consultations]
+    D --> G[Active Doctors]
+    D --> H[Revenue Aggregation]
+    E & F & G & H --> I[Return Analytics Response]
 ```
 
-Expensive analytics should be:
-
-```text
-precomputed
-or
-cached
-or
-processed asynchronously
-```
-
-rather than repeatedly scanning large transactional tables.
-
----
+Expensive analytics should be precomputed, cached, or processed asynchronously rather than repeatedly scanning large transactional tables.
 
 ---
 
 # 3. Observability
 
-Required:
+## Observability Architecture
 
-```text
-Metrics
-Logs
-Traces
+```mermaid
+flowchart TD
+    subgraph Application
+        A[Fastify API]
+        B[Pino Logger]
+        C[prom-client]
+    end
+
+    subgraph Outputs
+        D[stdout - JSON logs]
+        E[GET /metrics]
+    end
+
+    subgraph Monitoring
+        F[Log Aggregator]
+        G[Prometheus]
+        H[Grafana Dashboards]
+    end
+
+    A --> B --> D --> F
+    A --> C --> E --> G --> H
 ```
-
-
 
 ### Logs
 
-Structured JSON:
+Structured JSON via Pino:
 
 ```json
 {
   "level": "info",
   "event": "booking.created",
-  "requestId": "...",
-  "traceId": "...",
+  "requestId": "uuid-correlation-id",
   "userId": "...",
   "bookingId": "..."
 }
@@ -106,34 +117,15 @@ No passwords, tokens, prescriptions or unnecessary medical data.
 
 ```text
 http_requests_total
-http_request_duration
-http_errors_total
-
+http_request_duration_seconds
 booking_success_total
 booking_failure_total
-
-db_query_duration
-db_connection_pool_usage
-
-queue_depth
-queue_failures
-
 auth_failure_total
 rate_limit_total
 ```
 
-### Traces
+### Request Correlation
 
-```text
-HTTP Request
-   ↓
-Controller
-   ↓
-Service
-   ↓
-Repository
-   ↓
-PostgreSQL
-```
+Every request is stamped with a unique UUID correlation ID, enabling trace reconstruction across structured log entries.
 
 ---

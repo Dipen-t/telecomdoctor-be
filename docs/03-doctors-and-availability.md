@@ -1,32 +1,81 @@
 # 1. Doctor Management
 
+## Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    USER {
+        uuid id PK
+        string email UK
+        enum role
+    }
+    DOCTOR {
+        uuid id PK
+        uuid userId FK UK
+        string specialty
+        string qualification
+        int experience
+        decimal consultationFee
+        enum status
+        datetime createdAt
+    }
+    AVAILABILITY_SLOT {
+        uuid id PK
+        uuid doctorId FK
+        datetime startTime
+        datetime endTime
+        enum status
+        datetime createdAt
+    }
+
+    USER ||--o| DOCTOR : is
+    DOCTOR ||--o{ AVAILABILITY_SLOT : manages
+```
+
 Endpoints:
 
 ```text
 GET    /api/v1/doctors
 GET    /api/v1/doctors/:id
-POST   /api/v1/doctors
+POST   /api/v1/doctors         (ADMIN only)
 PATCH  /api/v1/doctors/:id
 ```
-
-Doctor profile:
-
-```text
-doctor
-├── user_id
-├── specialty
-├── qualification
-├── experience
-├── consultation_fee
-├── status
-└── timestamps
-```
-
----
 
 ---
 
 # 2. Availability Management
+
+## Slot State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> AVAILABLE : Doctor creates slot
+    AVAILABLE --> BOOKED : Patient books
+    AVAILABLE --> BLOCKED : Doctor blocks
+    AVAILABLE --> CANCELLED : Doctor cancels
+    BOOKED --> CANCELLED : Cancellation
+    BLOCKED --> AVAILABLE : Doctor unblocks
+```
+
+## Create Availability Sequence
+
+```mermaid
+sequenceDiagram
+    actor Doctor
+    participant API
+    participant Auth
+    participant DB as PostgreSQL
+
+    Doctor->>API: POST /doctors/:id/availability
+    API->>Auth: Authenticate + Authorize (DOCTOR)
+    Auth-->>API: Validated
+    API->>API: Validate: startTime < endTime
+    API->>DB: Check for overlapping slots
+    DB-->>API: No overlap
+    API->>DB: INSERT AvailabilitySlot (AVAILABLE)
+    DB-->>API: Created
+    API-->>Doctor: 201 Created
+```
 
 Endpoints:
 
@@ -36,50 +85,21 @@ GET    /api/v1/doctors/:id/availability
 DELETE /api/v1/availability/:id
 ```
 
-Slot:
-
-```text
-availability_slot
-├── id
-├── doctor_id
-├── start_time
-├── end_time
-├── status
-└── timestamps
-```
-
-Possible states:
-
-```text
-AVAILABLE
-BOOKED
-BLOCKED
-CANCELLED
-```
-
-Implementation decision.
-
 ---
 
----
+# 3. Search & Filtering
 
-# 3. Search
-
-Endpoint:
-
-```http
-GET /api/v1/doctors
-```
-
-Filters:
-
-```text
-specialty
-availability
-status
-fee range
-page
-limit
+```mermaid
+flowchart TD
+    A[GET /api/v1/doctors] --> B[Apply Filters]
+    B --> C{specialty?}
+    C -->|Yes| D[WHERE specialty = X]
+    B --> E{available?}
+    E -->|Yes| F[JOIN availability_slots]
+    B --> G{fee range?}
+    G -->|Yes| H[WHERE fee BETWEEN min AND max]
+    D & F & H --> I[Paginate Results]
+    I --> J[Return Page]
 ```
 
 Example:
