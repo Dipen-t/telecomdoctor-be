@@ -1,7 +1,11 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'refresh_secret';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'test' ? 'secret' : undefined);
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || (process.env.NODE_ENV === 'test' ? 'refresh_secret' : undefined);
+
+if (!JWT_SECRET || !REFRESH_TOKEN_SECRET) {
+  throw new Error('CRITICAL: JWT_SECRET and REFRESH_TOKEN_SECRET environment variables are required.');
+}
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
 
 export interface TokenPayload {

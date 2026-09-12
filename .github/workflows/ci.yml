@@ -58,7 +58,12 @@ jobs:
 
     - name: Run Linter
       run: npm run lint
-      continue-on-error: true # Just a placeholder since eslint isn't fully configured
+
+    - name: Run Typecheck
+      run: npm run typecheck
+
+    - name: Run Build
+      run: npm run build
 
     - name: Run Security Audit
       run: npm audit --audit-level=high

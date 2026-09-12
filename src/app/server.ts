@@ -19,6 +19,15 @@ import helmet from '@fastify/helmet';
 import cors from '@fastify/cors';
 import { setupRateLimiter } from '../middleware/rate-limiter';
 
+// Assert required environment variables before starting
+const requiredEnv = ['DATABASE_URL', 'REDIS_URL', 'JWT_SECRET', 'REFRESH_TOKEN_SECRET'];
+for (const env of requiredEnv) {
+  if (!process.env[env] && process.env.NODE_ENV !== 'test') {
+    console.error(`CRITICAL ERROR: Missing required environment variable: ${env}`);
+    process.exit(1);
+  }
+}
+
 const server = Fastify({
   logger: {
     level: process.env.LOG_LEVEL || 'info',
@@ -60,7 +69,7 @@ const start = async () => {
       }
     });
     await server.register(cors, {
-      origin: process.env.NODE_ENV === 'production' ? 'https://yourfrontend.com' : '*',
+      origin: process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? 'https://app.amrutam.example' : '*'),
       credentials: true
     });
 

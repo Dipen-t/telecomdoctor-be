@@ -11,7 +11,7 @@ export async function processOutboxEvents() {
     // This prevents multiple worker nodes from picking up the same event.
     const events = await prisma.$queryRaw<any[]>`
       UPDATE "OutboxEvent" 
-      SET status = 'PROCESSED', "processedAt" = NOW()
+      SET status = 'PROCESSING', "processedAt" = NOW()
       WHERE id IN (
         SELECT id FROM "OutboxEvent" 
         WHERE status = 'PENDING' 
@@ -34,6 +34,12 @@ export async function processOutboxEvents() {
           // In a real app, you would call your email provider (SendGrid, AWS SES) here
           await new Promise(resolve => setTimeout(resolve, 50)); 
         }
+
+        // Mark as fully PROCESSED only AFTER successful delivery
+        await prisma.outboxEvent.update({
+          where: { id: event.id },
+          data: { status: 'PROCESSED' }
+        });
 
       } catch (error) {
         // console.error(`[OutboxWorker] Failed to process event ${event.id}:`, error);
