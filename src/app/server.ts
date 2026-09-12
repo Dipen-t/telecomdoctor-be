@@ -50,7 +50,23 @@ const server = Fastify({
 server.setErrorHandler(globalErrorHandler);
 
 // Health check endpoint
-server.get('/health', async (request, reply) => {
+server.get('/health', {
+  schema: {
+    tags: ['System'],
+    summary: 'Health check',
+    description: 'Returns service health status. Used by load balancers and container orchestrators.',
+    response: {
+      200: {
+        description: 'Service is healthy',
+        type: 'object',
+        properties: {
+          status: { type: 'string', enum: ['ok'] },
+          timestamp: { type: 'string', format: 'date-time' }
+        }
+      }
+    }
+  }
+}, async (request, reply) => {
   return { status: 'ok', timestamp: new Date().toISOString() };
 });
 
