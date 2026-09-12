@@ -6,14 +6,14 @@
 erDiagram
     AVAILABILITY_SLOT {
         uuid id PK
-        uuid doctorId FK
+        uuid doctorId
         datetime startTime
         datetime endTime
         enum status
     }
     CONSULTATION {
         uuid id PK
-        uuid slotId FK UK
+        uuid slotId
         uuid patientId
         uuid doctorId
         enum status
@@ -22,14 +22,14 @@ erDiagram
     }
     PRESCRIPTION {
         uuid id PK
-        uuid consultationId FK UK
-        uuid doctorId FK
+        uuid consultationId
+        uuid doctorId
         string notes
         datetime createdAt
     }
     PRESCRIPTION_ITEM {
         uuid id PK
-        uuid prescriptionId FK
+        uuid prescriptionId
         string medicine
         string dosage
         string frequency

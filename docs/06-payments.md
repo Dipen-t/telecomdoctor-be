@@ -16,7 +16,7 @@ erDiagram
     }
     PAYMENT {
         uuid id PK
-        uuid consultationId FK UK
+        uuid consultationId
         decimal amount
         string currency
         enum status

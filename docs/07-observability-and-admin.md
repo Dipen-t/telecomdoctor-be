@@ -13,7 +13,7 @@ erDiagram
     }
     AUDIT_LOG {
         uuid id PK
-        uuid actorId FK
+        uuid actorId
         string action
         string resourceType
         string resourceId

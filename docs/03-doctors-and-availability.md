@@ -6,12 +6,12 @@
 erDiagram
     USER {
         uuid id PK
-        string email UK
+        string email
         enum role
     }
     DOCTOR {
         uuid id PK
-        uuid userId FK UK
+        uuid userId
         string specialty
         string qualification
         int experience
@@ -21,7 +21,7 @@ erDiagram
     }
     AVAILABILITY_SLOT {
         uuid id PK
-        uuid doctorId FK
+        uuid doctorId
         datetime startTime
         datetime endTime
         enum status

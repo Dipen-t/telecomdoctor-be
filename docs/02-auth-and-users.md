@@ -6,7 +6,7 @@
 erDiagram
     USER {
         uuid id PK
-        string email UK
+        string email
         string password
         enum role
         boolean mfaEnabled
@@ -15,7 +15,7 @@ erDiagram
     }
     PROFILE {
         uuid id PK
-        uuid userId FK
+        uuid userId
         string firstName
         string lastName
         string phone
@@ -23,7 +23,7 @@ erDiagram
     }
     AUDIT_LOG {
         uuid id PK
-        uuid actorId FK
+        uuid actorId
         string action
         string resourceType
         string resourceId
