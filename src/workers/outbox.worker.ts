@@ -15,6 +15,7 @@ export async function processOutboxEvents() {
       WHERE id IN (
         SELECT id FROM "OutboxEvent" 
         WHERE status = 'PENDING' 
+           OR (status = 'PROCESSING' AND "processedAt" < NOW() - INTERVAL '5 minutes') 
         ORDER BY "createdAt" ASC
         FOR UPDATE SKIP LOCKED 
         LIMIT 10
