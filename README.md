@@ -23,10 +23,11 @@ A production-grade, highly concurrent backend for a telemedicine consultation pl
 
 ```bash
 cp .env.example .env
-docker compose up --build
+docker compose up -d --build
+npm run seed:demo
 ```
 
-This boots PostgreSQL, Redis, and the API. Migrations run automatically on container startup.
+This boots PostgreSQL, Redis, and the API in the background. The seed script pre-populates the database with demo users (Admin, Doctors, Patients) for immediate testing.
 
 ### Option 2: Local Development
 

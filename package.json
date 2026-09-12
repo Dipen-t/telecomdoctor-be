@@ -12,7 +12,8 @@
     "test:run": "vitest run",
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit",
-    "build": "tsc"
+    "build": "tsc",
+    "seed:demo": "tsx prisma/seed-demo.ts"
   },
   "keywords": [],
   "author": "",
