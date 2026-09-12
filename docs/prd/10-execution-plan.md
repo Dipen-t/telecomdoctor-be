@@ -50,8 +50,8 @@ The backend is considered complete when:
 
 ### Observability
 
-* [ ] Structured logs
-* [ ] Metrics
+* [ ] Structured logging (Pino)
+* [ ] Fastify metrics
 * [ ] Traces
 * [ ] Request IDs
 * [ ] Trace IDs
@@ -248,7 +248,7 @@ Because the evaluation explicitly allocates **20 points to architecture, 20 to c
 
 So, **this is the PRD I'd freeze before implementation**:
 
-> **TypeScript + Node.js + Fastify + Prisma + PostgreSQL + Redis + PostgreSQL Outbox Worker + REST/OpenAPI + Docker + GitHub Actions + OpenTelemetry + Prometheus + Grafana.**
+> **TypeScript + Node.js + Fastify + Prisma + PostgreSQL + Redis + PostgreSQL Outbox Worker + REST/OpenAPI + Docker + GitHub Actions + Prometheus + Grafana.**
 
 And the architectural philosophy is:
 

@@ -88,11 +88,10 @@ GitHub Actions
 ## Observability
 
 ```text
-OpenTelemetry
-Prometheus
-Grafana
 Structured Logging
+Prometheus Metrics
 ```
+*(Note: We do not use OpenTelemetry or Distributed Tracing; unique correlation IDs are logged per request to handle tracing.)*
 
 ---
 
@@ -163,6 +162,14 @@ graph TD
 ```
 
 This provides clear domain boundaries while remaining realistic for a 4–5 day implementation.
+
+## Architecture Pragmatism
+
+For critical domains (Booking, Outbox, Concurrency), the application uses a strict separation between Controller and Service layers. However, for simpler CRUD administrative domains (like Admin analytics), controllers may occasionally read from Prisma directly to optimize velocity and avoid over-abstraction.
+
+## Security Checks (Defense in Depth)
+
+While `authorizeRoles(['ADMIN', 'DOCTOR'])` acts as the first role-based access control (RBAC) gate, **Resource Ownership Checks** are explicitly performed within the business logic (e.g., verifying `doctorId` matches the token).
 
 ---
 
