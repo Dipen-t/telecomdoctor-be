@@ -1,0 +1,189 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(PATIENT)
+  mfaEnabled Boolean @default(false)
+  mfaSecret String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile   Profile?
+  doctor    Doctor?
+  auditLogs AuditLog[]
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+model Profile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  firstName String
+  lastName  String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Doctor {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  specialty       String
+  qualification   String
+  experience      Int
+  consultationFee Decimal
+  status          DoctorStatus @default(ACTIVE)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availability    AvailabilitySlot[]
+  prescriptions   Prescription[]
+}
+
+enum DoctorStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model AvailabilitySlot {
+  id        String   @id @default(uuid())
+  doctorId  String
+  startTime DateTime
+  endTime   DateTime
+  status    SlotStatus @default(AVAILABLE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  consultation Consultation?
+}
+
+enum SlotStatus {
+  AVAILABLE
+  BOOKED
+  BLOCKED
+  CANCELLED
+}
+
+model Consultation {
+  id        String   @id @default(uuid())
+  slotId    String   @unique
+  patientId String
+  status    ConsultationStatus @default(SCHEDULED)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  slot      AvailabilitySlot @relation(fields: [slotId], references: [id])
+  prescription Prescription?
+  payment   Payment?
+}
+
+enum ConsultationStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Prescription {
+  id             String   @id @default(uuid())
+  consultationId String   @unique
+  doctorId       String
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  consultation   Consultation @relation(fields: [consultationId], references: [id])
+  doctor         Doctor       @relation(fields: [doctorId], references: [id])
+  items          PrescriptionItem[]
+}
+
+model PrescriptionItem {
+  id             String   @id @default(uuid())
+  prescriptionId String
+  medicine       String
+  dosage         String
+  frequency      String
+  duration       String
+  instructions   String?
+
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id                String   @id @default(uuid())
+  consultationId    String   @unique
+  amount            Decimal
+  currency          String   @default("INR")
+  status            PaymentStatus @default(PENDING)
+  providerReference String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  consultation      Consultation @relation(fields: [consultationId], references: [id])
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  actorId      String
+  action       String
+  resourceType String
+  resourceId   String?
+  requestId    String?
+  ipAddress    String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [actorId], references: [id])
+}
+
+model IdempotencyKey {
+  id             String   @id @default(uuid())
+  key            String
+  userId         String
+  requestHash    String
+  responseStatus Int
+  responseBody   Json
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime
+
+  @@unique([key, userId])
+}
+
+model OutboxEvent {
+  id        String   @id @default(uuid())
+  type      String
+  payload   Json
+  status    OutboxStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  processedAt DateTime?
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
