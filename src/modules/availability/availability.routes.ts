@@ -16,6 +16,7 @@ export async function availabilityRoutes(server: FastifyInstance) {
           doctorId: { type: 'string', format: 'uuid', description: 'Doctor UUID' }
         }
       },
+      response: {
         200: {
           description: 'List of availability slots',
           type: 'object',
