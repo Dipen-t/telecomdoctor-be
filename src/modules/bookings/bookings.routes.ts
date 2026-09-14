@@ -47,7 +47,7 @@ export async function bookingsRoutes(server: FastifyInstance) {
             }
           }
         },
-        401: { description: 'Unauthorized', type: 'object', properties: { error: { type: 'string' } } }
+        401: { description: 'Unauthorized', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     },
     preHandler: [authenticate, authorizeRoles(['PATIENT'])]
@@ -88,9 +88,9 @@ export async function bookingsRoutes(server: FastifyInstance) {
             consultationId: { type: 'string', format: 'uuid' }
           }
         },
-        400: { description: 'Validation error or idempotency mismatch', type: 'object', properties: { error: { type: 'string' }, code: { type: 'string' } } },
-        409: { description: 'Slot already booked (concurrency conflict)', type: 'object', properties: { error: { type: 'string' } } },
-        429: { description: 'Rate limit exceeded', type: 'object', properties: { error: { type: 'string' } } }
+        400: { description: 'Validation error or idempotency mismatch', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } },
+        409: { description: 'Slot already booked (concurrency conflict)', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } },
+        429: { description: 'Rate limit exceeded', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     },
     preHandler: [
@@ -124,8 +124,8 @@ export async function bookingsRoutes(server: FastifyInstance) {
             roomName: { type: 'string' }
           }
         },
-        403: { description: 'Not authorized for this consultation', type: 'object', properties: { error: { type: 'string' } } },
-        404: { description: 'Consultation not found', type: 'object', properties: { error: { type: 'string' } } }
+        403: { description: 'Not authorized for this consultation', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } },
+        404: { description: 'Consultation not found', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     },
     preHandler: [authenticate, authorizeRoles(['PATIENT', 'DOCTOR'])]

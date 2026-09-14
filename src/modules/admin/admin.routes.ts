@@ -24,7 +24,7 @@ export async function adminRoutes(server: FastifyInstance) {
             totalBookings: { type: 'integer' }
           }
         },
-        403: { description: 'Forbidden — requires ADMIN role', type: 'object', properties: { error: { type: 'string' } } }
+        403: { description: 'Forbidden — requires ADMIN role', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     },
     preHandler: [authenticate, authorizeRoles(['ADMIN'])]

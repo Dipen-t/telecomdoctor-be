@@ -31,9 +31,9 @@ export async function paymentsRoutes(server: FastifyInstance) {
             providerReference: { type: 'string', description: 'Mock gateway reference ID' }
           }
         },
-        400: { description: 'Validation error', type: 'object', properties: { error: { type: 'string' } } },
-        403: { description: 'Forbidden', type: 'object', properties: { error: { type: 'string' } } },
-        404: { description: 'Consultation not found', type: 'object', properties: { error: { type: 'string' } } }
+        400: { description: 'Validation error', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } },
+        403: { description: 'Forbidden', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } },
+        404: { description: 'Consultation not found', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     },
     preHandler: [authenticate, authorizeRoles(['PATIENT'])]
@@ -58,7 +58,7 @@ export async function paymentWebhookRoutes(server: FastifyInstance) {
       },
       response: {
         200: { description: 'Webhook processed', type: 'object', properties: { message: { type: 'string' } } },
-        400: { description: 'Invalid payload', type: 'object', properties: { error: { type: 'string' } } }
+        400: { description: 'Invalid payload', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     }
   }, processWebhookHandler);

@@ -40,8 +40,8 @@ export async function authRoutes(server: FastifyInstance) {
             }
           }
         },
-        400: { description: 'Validation error', type: 'object', properties: { error: { type: 'string' } } },
-        409: { description: 'Email already registered', type: 'object', properties: { error: { type: 'string' } } }
+        400: { description: 'Validation error', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } },
+        409: { description: 'Email already registered', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     }
   }, registerHandler);
@@ -81,7 +81,7 @@ export async function authRoutes(server: FastifyInstance) {
             }
           }
         },
-        401: { description: 'Invalid credentials', type: 'object', properties: { error: { type: 'string' } } }
+        401: { description: 'Invalid credentials', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     }
   }, loginHandler);
@@ -121,7 +121,7 @@ export async function authRoutes(server: FastifyInstance) {
             }
           }
         },
-        401: { description: 'Invalid or expired MFA code', type: 'object', properties: { error: { type: 'string' } } }
+        401: { description: 'Invalid or expired MFA code', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     }
   }, mfaVerifyHandler);

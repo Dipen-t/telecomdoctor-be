@@ -14,7 +14,7 @@ export async function webhooksRoutes(server: FastifyInstance) {
       },
       response: {
         200: { description: 'Webhook processed', type: 'object', properties: { message: { type: 'string' } } },
-        401: { description: 'Invalid webhook signature', type: 'object', properties: { error: { type: 'string' } } }
+        401: { description: 'Invalid webhook signature', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     }
   }, livekitWebhookHandler);

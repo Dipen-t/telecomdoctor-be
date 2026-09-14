@@ -78,8 +78,8 @@ export async function availabilityRoutes(server: FastifyInstance) {
             }
           }
         },
-        400: { description: 'Validation error (e.g. endTime before startTime)', type: 'object', properties: { error: { type: 'string' } } },
-        403: { description: 'Forbidden', type: 'object', properties: { error: { type: 'string' } } }
+        400: { description: 'Validation error (e.g. endTime before startTime)', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } },
+        403: { description: 'Forbidden', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     },
     preHandler: [authenticate, authorizeRoles(['DOCTOR', 'ADMIN'])]
@@ -100,8 +100,8 @@ export async function availabilityRoutes(server: FastifyInstance) {
       },
       response: {
         204: { description: 'Slot deleted', type: 'null' },
-        403: { description: 'Forbidden', type: 'object', properties: { error: { type: 'string' } } },
-        404: { description: 'Slot not found', type: 'object', properties: { error: { type: 'string' } } }
+        403: { description: 'Forbidden', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } },
+        404: { description: 'Slot not found', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     },
     preHandler: [authenticate, authorizeRoles(['DOCTOR', 'ADMIN'])]

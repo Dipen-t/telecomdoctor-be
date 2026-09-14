@@ -34,7 +34,7 @@ export async function usersRoutes(server: FastifyInstance) {
             }
           }
         },
-        401: { description: 'Unauthorized', type: 'object', properties: { error: { type: 'string' } } }
+        401: { description: 'Unauthorized', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     }
   }, getMeHandler);
@@ -61,7 +61,7 @@ export async function usersRoutes(server: FastifyInstance) {
             profile: { type: 'object' } 
           } 
         },
-        401: { description: 'Unauthorized', type: 'object', properties: { error: { type: 'string' } } }
+        401: { description: 'Unauthorized', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     }
   }, updateMeHandler);

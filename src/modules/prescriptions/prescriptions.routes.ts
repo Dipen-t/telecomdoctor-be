@@ -52,9 +52,9 @@ export async function prescriptionsRoutes(server: FastifyInstance) {
             notes: { type: 'string' }
           }
         },
-        400: { description: 'Validation error', type: 'object', properties: { error: { type: 'string' } } },
-        403: { description: 'Doctor does not own this consultation', type: 'object', properties: { error: { type: 'string' } } },
-        404: { description: 'Consultation not found', type: 'object', properties: { error: { type: 'string' } } }
+        400: { description: 'Validation error', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } },
+        403: { description: 'Doctor does not own this consultation', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } },
+        404: { description: 'Consultation not found', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     },
     preHandler: [authenticate, authorizeRoles(['DOCTOR'])]
@@ -97,8 +97,8 @@ export async function prescriptionsRoutes(server: FastifyInstance) {
             }
           }
         },
-        403: { description: 'Not authorized', type: 'object', properties: { error: { type: 'string' } } },
-        404: { description: 'Not found', type: 'object', properties: { error: { type: 'string' } } }
+        403: { description: 'Not authorized', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } },
+        404: { description: 'Not found', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     },
     preHandler: [authenticate, authorizeRoles(['DOCTOR', 'PATIENT'])]

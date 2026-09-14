@@ -74,7 +74,7 @@ export async function doctorsRoutes(server: FastifyInstance) {
             }
           }
         },
-        404: { description: 'Doctor not found', type: 'object', properties: { error: { type: 'string' } } }
+        404: { description: 'Doctor not found', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     }
   }, getDoctorByIdHandler);
@@ -109,8 +109,8 @@ export async function doctorsRoutes(server: FastifyInstance) {
             userId: { type: 'string', format: 'uuid' }
           }
         },
-        400: { description: 'Validation error', type: 'object', properties: { error: { type: 'string' } } },
-        403: { description: 'Forbidden — requires ADMIN role', type: 'object', properties: { error: { type: 'string' } } }
+        400: { description: 'Validation error', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } },
+        403: { description: 'Forbidden — requires ADMIN role', type: 'object', properties: { error: { type: 'object', properties: { code: { type: 'string' }, message: { type: 'string' } } } } }
       }
     },
     preHandler: [authenticate, authorizeRoles(['ADMIN'])]
