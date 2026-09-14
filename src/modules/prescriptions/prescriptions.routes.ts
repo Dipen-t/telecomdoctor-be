@@ -42,7 +42,16 @@ export async function prescriptionsRoutes(server: FastifyInstance) {
         }
       },
       response: {
-        201: { description: 'Prescription created', type: 'object' },
+        201: { 
+          description: 'Prescription created', 
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            consultationId: { type: 'string', format: 'uuid' },
+            doctorId: { type: 'string', format: 'uuid' },
+            notes: { type: 'string' }
+          }
+        },
         400: { description: 'Validation error', type: 'object', properties: { error: { type: 'string' } } },
         403: { description: 'Doctor does not own this consultation', type: 'object', properties: { error: { type: 'string' } } },
         404: { description: 'Consultation not found', type: 'object', properties: { error: { type: 'string' } } }

@@ -24,19 +24,24 @@ export async function bookingsRoutes(server: FastifyInstance) {
       response: {
         200: {
           description: 'List of bookings with consultation details',
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string', format: 'uuid' },
-              status: { type: 'string' },
-              meetingRoomId: { type: 'string' },
-              slot: {
+          type: 'object',
+          properties: {
+            consultations: {
+              type: 'array',
+              items: {
                 type: 'object',
                 properties: {
-                  startTime: { type: 'string', format: 'date-time' },
-                  endTime: { type: 'string', format: 'date-time' },
-                  doctor: { type: 'object' }
+                  id: { type: 'string', format: 'uuid' },
+                  status: { type: 'string' },
+                  meetingRoomId: { type: 'string' },
+                  slot: {
+                    type: 'object',
+                    properties: {
+                      startTime: { type: 'string', format: 'date-time' },
+                      endTime: { type: 'string', format: 'date-time' },
+                      doctor: { type: 'object' }
+                    }
+                  }
                 }
               }
             }
@@ -79,14 +84,8 @@ export async function bookingsRoutes(server: FastifyInstance) {
           description: 'Booking created successfully',
           type: 'object',
           properties: {
-            consultation: {
-              type: 'object',
-              properties: {
-                id: { type: 'string', format: 'uuid' },
-                status: { type: 'string', enum: ['SCHEDULED'] },
-                meetingRoomId: { type: 'string' }
-              }
-            }
+            message: { type: 'string' },
+            consultationId: { type: 'string', format: 'uuid' }
           }
         },
         400: { description: 'Validation error or idempotency mismatch', type: 'object', properties: { error: { type: 'string' }, code: { type: 'string' } } },

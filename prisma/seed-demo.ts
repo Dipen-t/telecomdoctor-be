@@ -35,6 +35,7 @@ async function main() {
   console.log('Creating Admin...');
   await prisma.user.create({
     data: {
+      id: '11111111-1111-1111-1111-111111111111',
       email: 'admin@example.com',
       password: passwordHash,
       role: 'ADMIN',
@@ -48,6 +49,7 @@ async function main() {
   console.log('Creating Doctor A...');
   const doctorA = await prisma.user.create({
     data: {
+      id: '22222222-2222-2222-2222-222222222222',
       email: 'doctor.a@example.com',
       password: passwordHash,
       role: 'DOCTOR',
@@ -56,6 +58,7 @@ async function main() {
       },
       doctor: {
         create: {
+          id: 'd2222222-2222-2222-2222-222222222222',
           specialty: 'Cardiology',
           qualification: 'MD',
           experience: 10,
@@ -70,6 +73,7 @@ async function main() {
   console.log('Creating Doctor B...');
   await prisma.user.create({
     data: {
+      id: '33333333-3333-3333-3333-333333333333',
       email: 'doctor.b@example.com',
       password: passwordHash,
       role: 'DOCTOR',
@@ -78,6 +82,7 @@ async function main() {
       },
       doctor: {
         create: {
+          id: 'd3333333-3333-3333-3333-333333333333',
           specialty: 'Dermatology',
           qualification: 'MBBS',
           experience: 5,
@@ -91,6 +96,7 @@ async function main() {
   console.log('Creating Patient A...');
   const patientA = await prisma.user.create({
     data: {
+      id: '44444444-4444-4444-4444-444444444444',
       email: 'patient.a@example.com',
       password: passwordHash,
       role: 'PATIENT',
@@ -104,6 +110,7 @@ async function main() {
   console.log('Creating Patient B...');
   await prisma.user.create({
     data: {
+      id: '55555555-5555-5555-5555-555555555555',
       email: 'patient.b@example.com',
       password: passwordHash,
       role: 'PATIENT',
@@ -121,9 +128,10 @@ async function main() {
   const tomorrowEnd = new Date(tomorrow);
   tomorrowEnd.setHours(11, 0, 0, 0);
 
-  console.log('Creating Availability Slot for Doctor A...');
-  const slot = await prisma.availabilitySlot.create({
+  console.log('Creating Completed Consultation Slot for Doctor A...');
+  const completedSlot = await prisma.availabilitySlot.create({
     data: {
+      id: '66666666-6666-6666-6666-666666666666',
       doctorId: doctorA.doctor!.id,
       startTime: tomorrow,
       endTime: tomorrowEnd,
@@ -135,7 +143,8 @@ async function main() {
   console.log('Creating Consultation...');
   const consultation = await prisma.consultation.create({
     data: {
-      slotId: slot.id,
+      id: 'c1111111-1111-1111-1111-111111111111',
+      slotId: completedSlot.id,
       patientId: patientA.id,
       status: 'COMPLETED', // Set to completed so we can add a prescription
     },
@@ -145,12 +154,14 @@ async function main() {
   console.log('Creating Prescription...');
   await prisma.prescription.create({
     data: {
+      id: 'p1111111-1111-1111-1111-111111111111',
       consultationId: consultation.id,
       doctorId: doctorA.doctor!.id,
       notes: 'Patient should rest for 3 days.',
       items: {
         create: [
           {
+            id: 'i1111111-1111-1111-1111-111111111111',
             medicine: 'Paracetamol',
             dosage: '500mg',
             frequency: '1-1-1',
@@ -159,6 +170,24 @@ async function main() {
           },
         ],
       },
+    },
+  });
+
+  // 10. Create an AVAILABLE slot for the live booking demo
+  const nextWeek = new Date();
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  nextWeek.setHours(14, 0, 0, 0);
+  const nextWeekEnd = new Date(nextWeek);
+  nextWeekEnd.setHours(15, 0, 0, 0);
+
+  console.log('Creating Available Slot for Doctor A (For Booking Demo)...');
+  await prisma.availabilitySlot.create({
+    data: {
+      id: '77777777-7777-7777-7777-777777777777',
+      doctorId: doctorA.doctor!.id,
+      startTime: nextWeek,
+      endTime: nextWeekEnd,
+      status: 'AVAILABLE',
     },
   });
 

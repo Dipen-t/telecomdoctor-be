@@ -16,15 +16,20 @@ export async function usersRoutes(server: FastifyInstance) {
           description: 'User profile',
           type: 'object',
           properties: {
-            id: { type: 'string', format: 'uuid' },
-            email: { type: 'string' },
-            role: { type: 'string', enum: ['PATIENT', 'DOCTOR', 'ADMIN'] },
-            profile: {
+            user: {
               type: 'object',
               properties: {
-                firstName: { type: 'string' },
-                lastName: { type: 'string' },
-                phone: { type: 'string' }
+                id: { type: 'string', format: 'uuid' },
+                email: { type: 'string' },
+                role: { type: 'string', enum: ['PATIENT', 'DOCTOR', 'ADMIN'] },
+                profile: {
+                  type: 'object',
+                  properties: {
+                    firstName: { type: 'string' },
+                    lastName: { type: 'string' },
+                    phone: { type: 'string' }
+                  }
+                }
               }
             }
           }
@@ -49,7 +54,13 @@ export async function usersRoutes(server: FastifyInstance) {
         }
       },
       response: {
-        200: { description: 'Profile updated', type: 'object', properties: { message: { type: 'string' } } },
+        200: { 
+          description: 'Profile updated', 
+          type: 'object', 
+          properties: { 
+            profile: { type: 'object' } 
+          } 
+        },
         401: { description: 'Unauthorized', type: 'object', properties: { error: { type: 'string' } } }
       }
     }

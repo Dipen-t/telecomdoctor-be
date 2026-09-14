@@ -20,27 +20,20 @@ export async function doctorsRoutes(server: FastifyInstance) {
       response: {
         200: {
           description: 'Paginated list of doctors',
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string', format: 'uuid' },
-              specialty: { type: 'string' },
-              qualification: { type: 'string' },
-              experience: { type: 'integer' },
-              consultationFee: { type: 'number' },
-              status: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
-              user: {
+          properties: {
+            doctors: {
+              type: 'array',
+              items: {
                 type: 'object',
                 properties: {
-                  email: { type: 'string' },
-                  profile: {
-                    type: 'object',
-                    properties: {
-                      firstName: { type: 'string' },
-                      lastName: { type: 'string' }
-                    }
-                  }
+                  id: { type: 'string', format: 'uuid' },
+                  specialty: { type: 'string' },
+                  qualification: { type: 'string' },
+                  experience: { type: 'integer' },
+                  consultationFee: { type: 'number' },
+                  status: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
+                  firstName: { type: 'string' },
+                  lastName: { type: 'string' }
                 }
               }
             }
@@ -63,7 +56,24 @@ export async function doctorsRoutes(server: FastifyInstance) {
         }
       },
       response: {
-        200: { description: 'Doctor profile', type: 'object' },
+        200: { 
+          description: 'Doctor profile', 
+          type: 'object',
+          properties: {
+            doctor: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                specialty: { type: 'string' },
+                qualification: { type: 'string' },
+                experience: { type: 'integer' },
+                consultationFee: { type: 'number' },
+                firstName: { type: 'string' },
+                lastName: { type: 'string' }
+              }
+            }
+          }
+        },
         404: { description: 'Doctor not found', type: 'object', properties: { error: { type: 'string' } } }
       }
     }
@@ -91,7 +101,14 @@ export async function doctorsRoutes(server: FastifyInstance) {
         }
       },
       response: {
-        201: { description: 'Doctor created', type: 'object' },
+        201: { 
+          description: 'Doctor created', 
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            userId: { type: 'string', format: 'uuid' }
+          }
+        },
         400: { description: 'Validation error', type: 'object', properties: { error: { type: 'string' } } },
         403: { description: 'Forbidden — requires ADMIN role', type: 'object', properties: { error: { type: 'string' } } }
       }

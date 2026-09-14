@@ -16,18 +16,22 @@ export async function availabilityRoutes(server: FastifyInstance) {
           doctorId: { type: 'string', format: 'uuid', description: 'Doctor UUID' }
         }
       },
-      response: {
         200: {
           description: 'List of availability slots',
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string', format: 'uuid' },
-              doctorId: { type: 'string', format: 'uuid' },
-              startTime: { type: 'string', format: 'date-time' },
-              endTime: { type: 'string', format: 'date-time' },
-              status: { type: 'string', enum: ['AVAILABLE', 'BOOKED', 'BLOCKED', 'CANCELLED'] }
+          type: 'object',
+          properties: {
+            slots: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  doctorId: { type: 'string', format: 'uuid' },
+                  startTime: { type: 'string', format: 'date-time' },
+                  endTime: { type: 'string', format: 'date-time' },
+                  status: { type: 'string', enum: ['AVAILABLE', 'BOOKED', 'BLOCKED', 'CANCELLED'] }
+                }
+              }
             }
           }
         }
@@ -57,7 +61,22 @@ export async function availabilityRoutes(server: FastifyInstance) {
         }
       },
       response: {
-        201: { description: 'Slot created', type: 'object' },
+        201: { 
+          description: 'Slot created', 
+          type: 'object',
+          properties: {
+            slot: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                doctorId: { type: 'string', format: 'uuid' },
+                startTime: { type: 'string', format: 'date-time' },
+                endTime: { type: 'string', format: 'date-time' },
+                status: { type: 'string' }
+              }
+            }
+          }
+        },
         400: { description: 'Validation error (e.g. endTime before startTime)', type: 'object', properties: { error: { type: 'string' } } },
         403: { description: 'Forbidden', type: 'object', properties: { error: { type: 'string' } } }
       }
@@ -79,7 +98,7 @@ export async function availabilityRoutes(server: FastifyInstance) {
         }
       },
       response: {
-        200: { description: 'Slot deleted', type: 'object', properties: { message: { type: 'string' } } },
+        204: { description: 'Slot deleted', type: 'null' },
         403: { description: 'Forbidden', type: 'object', properties: { error: { type: 'string' } } },
         404: { description: 'Slot not found', type: 'object', properties: { error: { type: 'string' } } }
       }
