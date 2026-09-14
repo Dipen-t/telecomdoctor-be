@@ -23,9 +23,21 @@ export async function authRoutes(server: FastifyInstance) {
           description: 'User created successfully',
           type: 'object',
           properties: {
-            id: { type: 'string', format: 'uuid' },
-            email: { type: 'string' },
-            role: { type: 'string', enum: ['PATIENT', 'DOCTOR', 'ADMIN'] }
+            user: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                email: { type: 'string' },
+                role: { type: 'string', enum: ['PATIENT', 'DOCTOR', 'ADMIN'] }
+              }
+            },
+            tokens: {
+              type: 'object',
+              properties: {
+                accessToken: { type: 'string' },
+                refreshToken: { type: 'string' }
+              }
+            }
           }
         },
         400: { description: 'Validation error', type: 'object', properties: { error: { type: 'string' } } },
@@ -52,8 +64,21 @@ export async function authRoutes(server: FastifyInstance) {
           description: 'Login successful — tokens returned',
           type: 'object',
           properties: {
-            accessToken: { type: 'string', description: 'Short-lived JWT (15min)' },
-            refreshToken: { type: 'string', description: 'Long-lived refresh token (7d)' }
+            user: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                email: { type: 'string' },
+                role: { type: 'string' }
+              }
+            },
+            tokens: {
+              type: 'object',
+              properties: {
+                accessToken: { type: 'string', description: 'Short-lived JWT (15min)' },
+                refreshToken: { type: 'string', description: 'Long-lived refresh token (7d)' }
+              }
+            }
           }
         },
         401: { description: 'Invalid credentials', type: 'object', properties: { error: { type: 'string' } } }
@@ -79,8 +104,21 @@ export async function authRoutes(server: FastifyInstance) {
           description: 'MFA verified — tokens returned',
           type: 'object',
           properties: {
-            accessToken: { type: 'string' },
-            refreshToken: { type: 'string' }
+            user: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                email: { type: 'string' },
+                role: { type: 'string' }
+              }
+            },
+            tokens: {
+              type: 'object',
+              properties: {
+                accessToken: { type: 'string' },
+                refreshToken: { type: 'string' }
+              }
+            }
           }
         },
         401: { description: 'Invalid or expired MFA code', type: 'object', properties: { error: { type: 'string' } } }
